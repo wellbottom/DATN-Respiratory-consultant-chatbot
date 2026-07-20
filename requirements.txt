@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+requests
+python-dotenv
+chromadb
+numpy
+tqdm
+SQLAlchemy
+psycopg[binary]
+PyJWT[crypto]

@@ -1,0 +1,13 @@
+.env
+.venv/
+node_modules/
+__pycache__/
+*.py[cod]
+*.log
+code.zip
+web_app/frontend/dist/
+web_app/storage/app.sqlite3
+web_app/storage/chroma/
+data/chunks/
+data/indexes/
+data/chroma_manifests/
