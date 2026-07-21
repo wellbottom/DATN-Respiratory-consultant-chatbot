@@ -784,15 +784,34 @@ h3, .h3 {
 @media (max-width: 1200px) {
   .chat-workspace {
     grid-template-columns: 260px 1fr;
-    /* Source inspector is hidden or lives in drawer */
+  }
+
+  .sidebar-sources {
+    display: none;
   }
 }
 
 @media (max-width: 900px) {
   .chat-workspace {
-    grid-template-columns: 1fr;
-    /* History sidebar & Source inspector are drawers */
-    height: calc(100vh - 128px); /* Account for bottom tab + top-bar */
+    grid-template-columns: minmax(0, 1fr);
+    height: calc(100dvh - 128px);
+  }
+
+  .sidebar-history,
+  .sidebar-sources {
+    display: none;
+  }
+
+  .thread-stream-container {
+    padding: 12px;
+  }
+
+  .message-bubble-row {
+    max-width: 100%;
+  }
+
+  .composer-outer-anchor {
+    padding: 8px 12px 12px;
   }
 }
 
