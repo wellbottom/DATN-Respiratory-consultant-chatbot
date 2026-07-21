@@ -1,4 +1,5 @@
 import unittest
+import json
 from pathlib import Path
 
 
@@ -6,6 +7,21 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class RepositoryContractTests(unittest.TestCase):
+    def test_vercel_entrypoint_builds_and_bundles_frontend(self):
+        entrypoint = (ROOT / "app.py").read_text(encoding="utf-8")
+        config = json.loads((ROOT / "vercel.json").read_text(encoding="utf-8"))
+
+        self.assertIn("from web_app.backend.main import app", entrypoint)
+        self.assertEqual(
+            config["buildCommand"],
+            "npm ci --prefix web_app/frontend && npm run build --prefix web_app/frontend",
+        )
+        self.assertEqual(config["functions"]["app.py"]["maxDuration"], 300)
+        self.assertEqual(
+            config["functions"]["app.py"]["includeFiles"],
+            "web_app/frontend/dist/**",
+        )
+
     def test_public_repository_files_exist_and_cover_private_state(self):
         env_example = (ROOT / ".env.example").read_text(encoding="utf-8")
         gitignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
