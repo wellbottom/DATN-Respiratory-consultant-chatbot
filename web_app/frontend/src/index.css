@@ -2123,6 +2123,37 @@ h3, .h3 {
   background-color: var(--brand-700) !important;
 }
 
+/* Keep desktop sidebars out of the mobile grid; drawers provide their controls. */
+@media (max-width: 1200px) {
+  .sidebar-sources {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .chat-workspace {
+    grid-template-columns: minmax(0, 1fr);
+    height: calc(100dvh - 128px);
+  }
+
+  .sidebar-history,
+  .sidebar-sources {
+    display: none;
+  }
+
+  .thread-stream-container {
+    padding: 12px;
+  }
+
+  .message-bubble-row {
+    max-width: 100%;
+  }
+
+  .composer-outer-anchor {
+    padding: 8px 12px 12px;
+  }
+}
+
 .cl-footer {
   background-color: var(--surface-2) !important;
 }
