@@ -191,3 +191,37 @@ CLERK_JWKS_URL=https://<your-instance>.clerk.accounts.dev/.well-known/jwks.json
 ```
 
 Clerk docs: https://clerk.com/docs/guides/development/clerk-environment-variables và https://clerk.com/docs/guides/sessions/manual-jwt-verification.
+
+## Deploy Vercel với Supabase và Chroma Cloud
+
+Vercel build frontend và chạy FastAPI trong cùng một project. Import repository với
+thư mục gốc là repository root; không đặt Root Directory thành `web_app/frontend`.
+
+Đặt các Environment Variables cho Production và Preview trong Vercel:
+
+```env
+DATABASE_URL=postgresql://postgres.PROJECT_REF:<PASSWORD_URL_ENCODED>@HOST:6543/postgres?sslmode=require
+CHROMA_API_KEY=
+WEBAPP_CHROMA_MODE=cloud
+WEBAPP_CHROMA_TENANT=
+WEBAPP_CHROMA_DATABASE=Respiratory
+SILICONFLOW_API_KEY=
+GROQ_API_KEY=
+CLERK_PUBLISHABLE_KEY=
+CLERK_JWKS_URL=
+CLERK_ALLOWED_ORIGINS=https://YOUR_PROJECT.vercel.app
+```
+
+Nếu mật khẩu PostgreSQL chứa `@`, thay ký tự đó bằng `%40` trong `DATABASE_URL`.
+Không thêm dấu nháy quanh giá trị trong Vercel. Dùng Transaction pooler port `6543`
+và `sslmode=require` cho Supabase.
+
+Sau khi deploy, kiểm tra:
+
+```text
+https://YOUR_PROJECT.vercel.app/api/health
+```
+
+Kết quả mong đợi là `{"status":"ok"}`. Sau đó đăng nhập bằng Clerk và gửi một tin
+nhắn để xác nhận hội thoại được lưu trong Supabase và truy hồi từ collection
+`local_rag` trên Chroma Cloud.

@@ -29,6 +29,11 @@ class RepositoryContractTests(unittest.TestCase):
         for name in (
             "SILICONFLOW_API_KEY",
             "GROQ_API_KEY",
+            "DATABASE_URL",
+            "CHROMA_API_KEY",
+            "WEBAPP_CHROMA_MODE",
+            "WEBAPP_CHROMA_TENANT",
+            "WEBAPP_CHROMA_DATABASE",
             "CLERK_PUBLISHABLE_KEY",
             "CLERK_JWKS_URL",
             "CLERK_ALLOWED_ORIGINS",
