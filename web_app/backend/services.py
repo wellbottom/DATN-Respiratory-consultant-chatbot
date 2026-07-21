@@ -123,7 +123,11 @@ class RetrievalEngine:
         self.distance_space = str(self.collection_metadata.get("distance_space") or "cosine")
         self.rerank_session = self._build_rerank_session()
         self.embedder = self._build_query_embedder()
-        self.hybrid_index = HybridIndex(settings.hybrid_index_dir)
+        self.hybrid_index = (
+            HybridIndex(settings.hybrid_index_dir)
+            if (settings.hybrid_index_dir / "manifest.json").exists()
+            else None
+        )
         self.section_store_path = self._resolve_section_store_path()
         self.legacy_flat_chunks = False
         self.section_index = self._load_section_index()
@@ -161,18 +165,22 @@ class RetrievalEngine:
             ),
         )
 
-    def _resolve_section_store_path(self) -> Path:
+    def _resolve_section_store_path(self) -> Path | None:
         if self.settings.section_store_path is not None:
             path = self.settings.section_store_path.resolve()
-            if not path.exists():
+            if path.exists():
+                return path
+            if self.settings.chroma_mode != "cloud":
                 raise FileNotFoundError(f"WEBAPP_SECTION_STORE_PATH khÃ´ng tá»“n táº¡i: {path}")
-            return path
 
         chunks_path_value = self.collection_metadata.get("chunks_path")
         if chunks_path_value:
             path = Path(str(chunks_path_value)).expanduser().resolve()
             if path.exists():
                 return path
+
+        if self.settings.chroma_mode == "cloud":
+            return None
 
         raise RuntimeError(
             "KhÃ´ng xÃ¡c Ä‘á»‹nh Ä‘Æ°á»£c section store Ä‘á»ƒ má»Ÿ rá»™ng ná»™i dung. "
@@ -181,6 +189,8 @@ class RetrievalEngine:
 
     def _load_section_index(self) -> dict[str, dict[str, Any]]:
         index: dict[str, dict[str, Any]] = {}
+        if self.section_store_path is None:
+            return index
         for row in iter_jsonl(self.section_store_path):
             if "section_id" not in row:
                 self.legacy_flat_chunks = True
@@ -262,6 +272,17 @@ class RetrievalEngine:
         query_vector = self.embedder.encode_queries([query_text])[0]
         pool = self.settings.rerank_candidate_limit
         dense = self._query_collection(query_vector, where=None, top_k=pool)
+        if self.hybrid_index is None:
+            plan = QueryPlan(
+                collection_name=self.collection_name,
+                knowledge_base=self.knowledge_base,
+                corpora=["local_rag"],
+                intent="general",
+                section_types=[],
+                reasons=[f"Vector retrieval from Chroma collection {self.collection_name}."],
+            )
+            return plan, dense
+
         lexical_hits = self.hybrid_index.lexical_search(query_text, top_k=pool)
         lexical = {
             str(self.hybrid_index.chunks[doc_idx]["chunk_id"]): (self.hybrid_index.chunks[doc_idx], score)

@@ -62,6 +62,22 @@ class RetrievalEngineTests(unittest.TestCase):
         self.assertGreater(results[0].rrf_score, results[1].rrf_score)
         self.assertNotIn("where", engine.collection.calls[0])
 
+    def test_search_uses_chroma_without_local_hybrid_index(self) -> None:
+        engine = RetrievalEngine.__new__(RetrievalEngine)
+        engine.settings = SimpleNamespace(rerank_candidate_limit=2)
+        engine.collection_name = "local_rag"
+        engine.knowledge_base = "general_medical"
+        engine.distance_space = "cosine"
+        engine.embedder = SimpleNamespace(encode_queries=lambda _: [[1.0, 0.0]])
+        engine.collection = FakeCollection()
+        engine.hybrid_index = None
+
+        plan, results = engine.search("hen suyễn")
+
+        self.assertEqual(plan.reasons, ["Vector retrieval from Chroma collection local_rag."])
+        self.assertEqual([item.chunk_id for item in results], ["a", "b"])
+        self.assertEqual([item.rrf_score for item in results], [0.0, 0.0])
+
     def test_source_payload_keeps_chunk_content(self) -> None:
         payload = source_section_payload(
             SectionBundle(
